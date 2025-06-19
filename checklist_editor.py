@@ -1,8 +1,22 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-ChecklistEditor – 新建 / 编辑机型检查单（逐行增删项，保证至少 1 条）
-依赖 main_window.py 内的 ChecklistManager 与 yes_no。
+ChecklistEditor – 编辑机型检查单的对话窗口（新增、删除阶段与检查项）
+
+本模块提供一个用于管理飞行检查单的 GUI 对话框，支持以下功能：
+- 按阶段组织检查项目（如：启动、滑行、起飞等）
+- 每阶段下可添加多个检查项，支持逐行编辑、添加、删除
+- 阶段名称可重命名，至少保留一个阶段和一项
+- 自动保存并写入到 ChecklistManager 中
+
+依赖项：
+- main_window.py 中的 ChecklistManager 和 yes_no 工具函数
+- 使用 PySide6 构建界面
+
+用例：
+从主程序中以模态对话框方式调用 ChecklistEditor，实现检查单的增删改管理。
 """
+
 from __future__ import annotations
 from typing import List
 
@@ -92,7 +106,7 @@ class ChecklistEditor(QDialog):
         left.addWidget(del_stage)
 
         right = QVBoxLayout()
-        right.addWidget(QLabel("项目（每行一条）"))
+        right.addWidget(QLabel("检查项目"))
         right.addWidget(self.item_list)
         right.addWidget(save_btn, alignment=Qt.AlignRight)
 

@@ -1,15 +1,37 @@
 # main_window.py
-"""Main GUI for Flight Checklist Companion.
-
-This file provides:
-* data persistence managers (ChecklistManager, ATCManager)
-* helper functions (ensure_dir, yes_no)
-* reusable widgets: ChartView, ChartWidget, NotesWidget, ChecklistWidget, ATCWidget
-* MainWindow class and CLI entry‑point
-
-ChecklistEditor and ATCEditor live in *checklist_editor.py* and *atc_editor.py*
-respectively – imported lazily when needed to avoid circular imports.
 """
+Flight Checklist Companion – 主窗口 GUI 模块
+
+本模块实现桌面应用的主界面，组织各功能模块，并提供统一入口点。
+支持以下主要功能：
+
+📦 功能组成：
+- 数据管理器：
+    - ChecklistManager：负责加载/保存检查单数据
+    - ATCManager：负责加载/保存 ATC 模板数据
+- 辅助函数：
+    - ensure_dir：确保目录存在
+    - yes_no：标准确认对话框封装
+- 核心组件：
+    - ChartView     ：带缩放拖拽支持的航图浏览器
+    - ChartWidget   ：航图展示与导入管理模块
+    - NotesWidget   ：阶段与全局备注区域
+    - ChecklistWidget：检查单模块，支持阶段划分与状态追踪
+    - ATCWidget     ：ATC 对话模板浏览器与编辑器
+    - MainWindow    ：主界面，协调所有部件
+- CLI 入口点：
+    - `main()` 作为启动函数，初始化 QApplication 并显示 MainWindow
+
+📁 模块依赖：
+- `checklist_editor.py`：Checklist 编辑器，按需引入避免循环依赖
+- `atc_editor.py`：ATC 模板编辑器，按需引入避免循环依赖
+- `data/` 文件夹用于本地数据持久化，包括 checklists, atc, charts, notes 等
+
+⚠️ 注意事项：
+- 所有数据均为本地持久化，不依赖远程服务器
+- 该模块为 GUI 中心，不建议直接测试；测试请参考 `test_gui.py`
+"""
+
 from __future__ import annotations
 
 import json

@@ -1,8 +1,26 @@
 #!/usr/bin/env python3
 """
-ATCEditor – 新建 ATC 对话模板
-依赖 main_window.py 中的 ATCManager。
+ATCEditor – ATC 对话模板编辑器（新建）
+
+📋 功能简介：
+用于创建一个新的 ATC 通信模板，支持填写：
+- 模板名称
+- 中文对话内容
+- 英文对话内容
+
+📦 依赖组件：
+- `main_window.ATCManager`：用于读取与写入 `data/atc/<ac>/atc.json`
+- Qt 组件：QDialog、QLineEdit、QTextEdit、QPushButton、QMessageBox 等
+
+🚧 校验规则：
+- 名称不能为空
+- 中文与英文不能同时为空
+- 同一阶段内禁止模板名称重复
+
+📁 典型使用场景：
+由主窗口中 `ATCWidget` 发起，用于添加新对话模板。
 """
+
 from __future__ import annotations
 from PySide6.QtCore   import Qt
 from PySide6.QtWidgets import (
