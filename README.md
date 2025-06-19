@@ -72,7 +72,7 @@
 **界面示意：**
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/72892d84-271d-4ea6-a269-09855d857eb2" alt="Main Window" width="800"/>
+  <img src="https://github.com/user-attachments/assets/72892d84-271d-4ea6-a269-09855d857eb2" alt="Main Window" width="600"/>
 </div>
 
 ---
