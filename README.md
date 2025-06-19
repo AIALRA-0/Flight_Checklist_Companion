@@ -1,5 +1,9 @@
 # 🛫 Flight Checklist Companion
 
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/6b26bf71-2823-4d1e-b3de-c40c95d989ad" alt="Main Window" width="200"/>
+</div>
+
 一个为模拟飞行爱好者设计的本地桌面工具，用于管理飞行前、中、后的自定义**检查单**、**ATC对话模板**、**航图** 以及 **飞行笔记**
 
 > 📦 桌面应用，基于 [PySide6](https://doc.qt.io/qtforpython/) 实现，支持保存配置、拖拽导入图片、自动保存笔记等功能；
@@ -7,10 +11,9 @@
 ---
 
 ## 🖼️ 主页预览
-
-> 📷 请在此处插入应用主界面截图（建议尺寸：宽度 `800px`）
-
-<img src="docs/img/main_window.png" alt="Main Window" width="800"/>
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/2bf24787-fe26-4235-8ee4-456d5e2a4252" alt="Main Window" width="1200"/>
+</div>
 
 ---
 
@@ -29,7 +32,14 @@
 
 **界面示意：**
 
-<img src="docs/img/checklist.png" alt="Checklist View" width="400"/>
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/f65901cd-ddc6-422a-a5d4-6d4a2cbfa847" alt="Main Window" width="400"/>
+</div>
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/eb08fa4c-d1cb-486a-9680-0c1c08905ae4" alt="Main Window" width="400"/>
+</div>
+
 
 ---
 
@@ -44,7 +54,13 @@
 
 **界面示意：**
 
-<img src="docs/img/atc_templates.png" alt="ATC Template" width="400"/>
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/920a426a-407d-4599-8540-f6e3f2ec3c36" alt="Main Window" width="400"/>
+</div>
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/795ca777-6fbf-4fc2-b035-2ba40135b68b" alt="Main Window" width="400"/>
+</div>
 
 ---
 
@@ -59,7 +75,9 @@
 
 **界面示意：**
 
-<img src="docs/img/charts.png" alt="Charts" width="600"/>
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/72892d84-271d-4ea6-a269-09855d857eb2" alt="Main Window" width="600"/>
+</div>
 
 ---
 
@@ -72,7 +90,9 @@
 
 **界面示意：**
 
-<img src="docs/img/notes.png" alt="Notes" width="500"/>
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/5893556e-0035-41d8-b6ac-6fe08a987f90" alt="Main Window" width="1200"/>
+</div>
 
 ---
 
@@ -87,7 +107,7 @@
 
 **界面示意：**
 
-<img src="docs/img/notes.png" alt="Notes" width="500"/>
+<img src="https://github.com/user-attachments/assets/62e0052b-4a41-4326-8138-0c7e768746c5" alt="Notes" width="1200"/>
 
 ---
 
@@ -133,6 +153,7 @@
 ## ⚠️ **注意事项**
 - 本工具为个人开发，尚未经过完整系统性测试；
 - 使用过程中可能存在 BUG 或不稳定行为；
+- 示例内容由AI自动生成，不具有参考价值
 
 🙋‍♂️ 若你在使用中遇到任何问题，欢迎提交 issue 或直接联系作者反馈；
 
