@@ -179,3 +179,10 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+data/atc/通用检查单/atc.json
+data/charts/ZBAA AVB9ZA BUG9ZA ARR.png
+data/charts/ZBAA IDKEX RANV DEP.png
+data/checklists/通用检查单/checklist.json
+data/notes/global.txt
+data/notes/通用检查单_停机位.txt
+save/ZBAA-XXXX.zip
