@@ -28,7 +28,14 @@
 
 **界面示意：**
 
-<img src="docs/img/checklist.png" alt="Checklist View" width="400"/>
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/f65901cd-ddc6-422a-a5d4-6d4a2cbfa847" alt="Main Window" width="1600"/>
+</div>
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/5a2feab9-725a-45b8-a664-a46aa920f38e" alt="Main Window" width="1600"/>
+</div>
+
 
 ---
 
