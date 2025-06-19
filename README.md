@@ -1,7 +1,7 @@
 # 🛫 Flight Checklist Companion
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/6b26bf71-2823-4d1e-b3de-c40c95d989ad" alt="Main Window" width="100"/>
+  <img src="https://github.com/user-attachments/assets/6b26bf71-2823-4d1e-b3de-c40c95d989ad" alt="Main Window" width="200"/>
 </div>
 
 一个为模拟飞行爱好者设计的本地桌面工具，用于管理飞行前、中、后的自定义**检查单**、**ATC对话模板**、**航图** 以及 **飞行笔记**
