@@ -1,5 +1,9 @@
 # 🛫 Flight Checklist Companion
 
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/6b26bf71-2823-4d1e-b3de-c40c95d989ad" alt="Main Window" width="100"/>
+</div>
+
 一个为模拟飞行爱好者设计的本地桌面工具，用于管理飞行前、中、后的自定义**检查单**、**ATC对话模板**、**航图** 以及 **飞行笔记**
 
 > 📦 桌面应用，基于 [PySide6](https://doc.qt.io/qtforpython/) 实现，支持保存配置、拖拽导入图片、自动保存笔记等功能；
