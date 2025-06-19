@@ -10,7 +10,7 @@
 
 > 📷 请在此处插入应用主界面截图（建议尺寸：宽度 `800px`）
 
-<img src="docs/img/main_window.png" alt="Main Window" width="800"/>
+<img src="https://github.com/user-attachments/assets/c7c82b37-25ca-43ed-8099-e0579afcf387" alt="Main Window" width="800"/>
 
 ---
 
