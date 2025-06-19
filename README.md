@@ -50,7 +50,13 @@
 
 **界面示意：**
 
-<img src="docs/img/atc_templates.png" alt="ATC Template" width="400"/>
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/920a426a-407d-4599-8540-f6e3f2ec3c36" alt="Main Window" width="400"/>
+</div>
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/795ca777-6fbf-4fc2-b035-2ba40135b68b" alt="Main Window" width="400"/>
+</div>
 
 ---
 
@@ -65,7 +71,9 @@
 
 **界面示意：**
 
-<img src="docs/img/charts.png" alt="Charts" width="600"/>
+<div align="center">
+  <img src="!https://github.com/user-attachments/assets/72892d84-271d-4ea6-a269-09855d857eb2" alt="Main Window" width="400"/>
+</div>
 
 ---
 
@@ -78,7 +86,9 @@
 
 **界面示意：**
 
-<img src="docs/img/notes.png" alt="Notes" width="500"/>
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/5893556e-0035-41d8-b6ac-6fe08a987f90" alt="Main Window" width="400"/>
+</div>
 
 ---
 
@@ -93,7 +103,7 @@
 
 **界面示意：**
 
-<img src="docs/img/notes.png" alt="Notes" width="500"/>
+<img src="https://github.com/user-attachments/assets/62e0052b-4a41-4326-8138-0c7e768746c5" alt="Notes" width="1200"/>
 
 ---
 
