@@ -33,7 +33,7 @@
 </div>
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/5a2feab9-725a-45b8-a664-a46aa920f38e" alt="Main Window" width="400"/>
+  <img src="https://github.com/user-attachments/assets/eb08fa4c-d1cb-486a-9680-0c1c08905ae4" alt="Main Window" width="400"/>
 </div>
 
 
