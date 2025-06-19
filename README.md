@@ -8,7 +8,7 @@
 
 ## 🖼️ 主页预览
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/2bf24787-fe26-4235-8ee4-456d5e2a4252" alt="Main Window" width="1200"/>
+  <img src="https://github.com/user-attachments/assets/2bf24787-fe26-4235-8ee4-456d5e2a4252" alt="Main Window" width="1600"/>
 </div>
 
 ---
