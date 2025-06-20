@@ -33,12 +33,12 @@
 **界面示意：**
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/8162c45d-7aec-4806-961b-a19a22d146b5" alt="Main Window" width="400"/>
+  <img src="https://github.com/user-attachments/assets/8162c45d-7aec-4806-961b-a19a22d146b5" alt="Main Window" width="600"/>
 </div>
 
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/bd4d4f1f-77d9-40b7-9e8c-b01fe2286bb5" alt="Main Window" width="400"/>
+  <img src="https://github.com/user-attachments/assets/bd4d4f1f-77d9-40b7-9e8c-b01fe2286bb5" alt="Main Window" width="600"/>
 </div>
 
 
