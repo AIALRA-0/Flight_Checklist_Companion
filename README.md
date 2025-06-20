@@ -12,8 +12,9 @@
 
 ## 🖼️ 主页预览
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/7293f104-d508-465a-a2cf-2311a705c93c" alt="Main Window" width="1200"/>
+  <img src="https://github.com/user-attachments/assets/3601cdea-ed88-45f2-9008-103a072ceefb" alt="Main Window" width="1200"/>
 </div>
+
 
 ---
 
@@ -35,20 +36,20 @@
 - 提供导出与导入功能，方便备份或共享检查单模板。
 - 所有检查项以复选框显示，便于实时打勾；
 - 检查完成后可一键跳转至“下一阶段”；
+- 支持一键完成阶段；
 - 支持“还原”操作，一键重置所有阶段为未勾选；
 - 可导出/保存整个机型检查单结构，便于管理。
 
 **界面示意：**
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/8162c45d-7aec-4806-961b-a19a22d146b5" alt="Main Window" width="600"/>
+  <img src="https://github.com/user-attachments/assets/ae0333cc-84bd-4e5c-9749-d5e3dfd1329b" alt="Main Window" width="600"/>
 </div>
 
 
 <div align="center">
   <img src="https://github.com/user-attachments/assets/bd4d4f1f-77d9-40b7-9e8c-b01fe2286bb5" alt="Main Window" width="600"/>
 </div>
-
 
 
 ---
