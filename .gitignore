@@ -187,3 +187,6 @@ data/notes/global.txt
 data/notes/通用检查单_停机位.txt
 save/ZBAA-XXXX.zip
 data/checklists/B777-一般流程/checklist.json
+data/atc/B777-一般流程/atc.json
+data/notes/B777-一般流程_接通电源.txt
+save/ZBAA.zip

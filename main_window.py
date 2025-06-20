@@ -481,10 +481,12 @@ class ChecklistWidget(QGroupBox):
         """)
 
         self.next_btn = QPushButton("下一阶段 →")
+        self.complete_btn = QPushButton("完成检查单")
         self.reset_btn = QPushButton("还原检查单")
 
         btn_row = QHBoxLayout()
         btn_row.addWidget(self.next_btn)
+        btn_row.addWidget(self.complete_btn) 
         btn_row.addWidget(self.reset_btn)
 
         lay = QVBoxLayout(self)
@@ -499,6 +501,7 @@ class ChecklistWidget(QGroupBox):
         edit_btn.clicked.connect(self._edit_ac)
         del_btn.clicked.connect(self._del_ac)
         self.reset_btn.clicked.connect(self._reset_checks)
+        self.complete_btn.clicked.connect(self._complete_checks)
 
         # self.tree.itemChanged.connect(self._update_next_btn)
         self.tree.itemChanged.connect(self._on_item_changed)
@@ -525,8 +528,12 @@ class ChecklistWidget(QGroupBox):
         if not ac:
             QMessageBox.warning(self, "无机型", "当前没有可编辑的机型。")
             return
-        ChecklistEditor(self, self.mgr, ac).exec()
-        self._ac_changed(ac)
+        cur_stage_idx = self.stage_cmb.currentIndex()
+        dlg = ChecklistEditor(self, self.mgr, ac)
+        dlg.stage_list.setCurrentRow(cur_stage_idx)
+        if dlg.exec():
+            self._ac_changed(ac)
+            self.stage_cmb.setCurrentIndex(cur_stage_idx)  # 保存后恢复页面
 
     def _del_ac(self):
         ac = self.ac_cmb.currentText()
@@ -679,17 +686,22 @@ class ChecklistWidget(QGroupBox):
         if not yes_no(self, "还原检查单", "确定将所有阶段的所有项目标记为未完成？"):
             return
 
-        for i in range(self.stage_cmb.count()):
-            self.stage_cmb.setCurrentIndex(i)
-            QApplication.processEvents()
-            def clear_node(node):
-                node.setCheckState(0, Qt.Unchecked)
-                for j in range(node.childCount()):
-                    clear_node(node.child(j))
-            for j in range(self.tree.topLevelItemCount()):
-                clear_node(self.tree.topLevelItem(j))
-        if self.stage_cmb.count() > 0:
-            self.stage_cmb.setCurrentIndex(0)
+        ac = self.ac_cmb.currentText()
+        data = self.mgr.read(ac)
+        for stage in data.get("stages", []):
+            for item in stage["items"]:
+                if isinstance(item, dict):
+                    item["checked"] = False  # 可用于后续持久化状态（可选）
+
+        # 刷新当前显示阶段的 UI
+        self._stage_changed(self.stage_cmb.currentIndex())
+
+        # 跳转回首页
+        self.stage_cmb.setCurrentIndex(0)
+
+        # 如需真正保存 reset 状态到文件，可加入：
+        # self.mgr.write(ac, data)
+        
 
     # 勾选变化时，更新所有可选父节点的颜色
     def _update_color(self, item: QTreeWidgetItem):
@@ -730,6 +742,17 @@ class ChecklistWidget(QGroupBox):
                 lock_children(child)
 
         lock_children(itm)
+        self._update_next_btn()
+    
+    def _complete_checks(self):
+        def check_all(item: QTreeWidgetItem):
+            item.setCheckState(0, Qt.Checked)
+            for i in range(item.childCount()):
+                check_all(item.child(i))
+
+        for i in range(self.tree.topLevelItemCount()):
+            check_all(self.tree.topLevelItem(i))
+
         self._update_next_btn()
 # ──────────────────────────────────────────────────────────────────────────────
 # ATC widget (middle column)
@@ -833,7 +856,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle(APP_TITLE)
-        self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
+        self.setWindowFlag(Qt.WindowStaysOnTopHint, False)
         self.resize(1400, 800)
 
         # managers
@@ -846,7 +869,7 @@ class MainWindow(QWidget):
         
         # 置顶
         self.pin_cb = QCheckBox("窗口置顶")
-        self.pin_cb.setChecked(True)  # 默认勾选
+        self.pin_cb.setChecked(False)  # 默认勾选
         self.pin_cb.stateChanged.connect(self._toggle_stay_on_top)
 
         grid = QGridLayout(self)

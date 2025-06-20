@@ -14,7 +14,7 @@ ChecklistEditor – 编辑机型检查单的对话窗口（新增、删除阶段
 - 使用 PySide6 构建界面
 
 用例：
-从主程序中以模态对话框方式调用 ChecklistEditor，实现检查单的增删改管理。
+从主程序中以模态对话框方式调用 ChecklistEditor，实现检查单的增删改管理
 """
 
 from __future__ import annotations
