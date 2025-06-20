@@ -12,7 +12,7 @@
 
 ## 🖼️ 主页预览
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/2bf24787-fe26-4235-8ee4-456d5e2a4252" alt="Main Window" width="1200"/>
+  <img src="https://github.com/user-attachments/assets/7293f104-d508-465a-a2cf-2311a705c93c" alt="Main Window" width="1200"/>
 </div>
 
 ---
@@ -24,8 +24,16 @@
 - 用于创建、编辑和运行机型的阶段性检查项：
 - 支持多个机型配置，数据独立存储；
 - 每个机型可定义多个飞行阶段；
-- 每个阶段内配置若干条 检查项，支持动态编辑；
-- 所有检查项以 复选框 显示，便于实时打勾；
+- 可选分支节点：
+  - 某些检查项可以设为“可选项”，其子项仅在勾选后才启用；
+  - 未勾选的可选项，其子项将被禁用并置灰，防止误操作；
+- 自动颜色反馈：
+  - 可选项未勾选为灰色，勾选后恢复黑色；
+  - 强制项恒为黑色，强调必须执行；
+- 可视化编辑器：
+  - 内置图形编辑器，支持增删改任意阶段与子项；
+- 提供导出与导入功能，方便备份或共享检查单模板。
+- 所有检查项以复选框显示，便于实时打勾；
 - 检查完成后可一键跳转至“下一阶段”；
 - 支持“还原”操作，一键重置所有阶段为未勾选；
 - 可导出/保存整个机型检查单结构，便于管理。
@@ -33,12 +41,14 @@
 **界面示意：**
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/f65901cd-ddc6-422a-a5d4-6d4a2cbfa847" alt="Main Window" width="400"/>
+  <img src="https://github.com/user-attachments/assets/8162c45d-7aec-4806-961b-a19a22d146b5" alt="Main Window" width="600"/>
 </div>
 
+
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/eb08fa4c-d1cb-486a-9680-0c1c08905ae4" alt="Main Window" width="400"/>
+  <img src="https://github.com/user-attachments/assets/bd4d4f1f-77d9-40b7-9e8c-b01fe2286bb5" alt="Main Window" width="600"/>
 </div>
+
 
 
 ---
@@ -55,11 +65,11 @@
 **界面示意：**
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/920a426a-407d-4599-8540-f6e3f2ec3c36" alt="Main Window" width="400"/>
+  <img src="https://github.com/user-attachments/assets/920a426a-407d-4599-8540-f6e3f2ec3c36" alt="Main Window" width="600"/>
 </div>
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/795ca777-6fbf-4fc2-b035-2ba40135b68b" alt="Main Window" width="400"/>
+  <img src="https://github.com/user-attachments/assets/795ca777-6fbf-4fc2-b035-2ba40135b68b" alt="Main Window" width="600"/>
 </div>
 
 ---
