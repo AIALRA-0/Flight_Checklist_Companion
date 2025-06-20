@@ -129,15 +129,12 @@
 ├── main_window.py        # 主窗口及主要控件
 ├── checklist_editor.py   # 检查单编辑器
 ├── atc_editor.py         # ATC 模板编辑器
-├── test_gui.py           # 自动化 UI 测试
 ├── data/                 # 存储用户数据
 │   ├── checklists/
 │   ├── atc/
 │   ├── charts/
 │   └── notes/
 ├── save/                 # 航线配置（ZIP）
-└── docs/
-    └── img/              # README 图片
 ````
 
 ---
