@@ -81,22 +81,29 @@ class _TreeItemRow(QWidget):
         idx = self._row()
         cur_item = self.lw.item(idx)
         cur_data = cur_item.data(Qt.UserRole) or {"level": 0, "optional": False}
-
         cur_level = cur_data.get("level", 0)
         cur_optional = cur_data.get("optional", False)
-
+    
+        # 计算新项的层级：若当前项有子项 → 插入第一子项的层级；否则维持当前层级
+        new_level = cur_level
+        if idx + 1 < self.lw.count():
+            next_item = self.lw.item(idx + 1)
+            next_level = (next_item.data(Qt.UserRole) or {}).get("level", 0)
+            if next_level > cur_level:
+                new_level = next_level
+    
         itm = QListWidgetItem()
         self.lw.insertItem(idx + 1, itm)
-
+    
         row = _TreeItemRow(self.lw, {
             "text": "",
-            "level": cur_level,
+            "level": new_level,
             "optional": cur_optional
         })
-
+    
         itm.setData(Qt.UserRole, {
             "text": "",
-            "level": cur_level,
+            "level": new_level,
             "optional": cur_optional
         })
         itm.setSizeHint(row.sizeHint())
