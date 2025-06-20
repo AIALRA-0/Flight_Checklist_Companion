@@ -34,6 +34,7 @@ Flight Checklist Companion – 主窗口 GUI 模块
 
 from __future__ import annotations
 
+import sys
 import json
 import shutil
 from itertools import chain
@@ -41,35 +42,24 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from PySide6.QtCore import Qt, QRectF, QMimeData, QTimer
-from PySide6.QtGui import QPixmap, QWheelEvent, QDragEnterEvent, QDropEvent, QPainter, QMouseEvent
+from PySide6.QtGui import QPixmap, QWheelEvent, QDragEnterEvent, QDropEvent, QPainter, QMouseEvent, QBrush
 from PySide6.QtWidgets import (
     QApplication, QWidget, QGroupBox, QHBoxLayout, QVBoxLayout, QGridLayout,
     QLabel, QComboBox, QPushButton, QTextEdit, QListWidget, QCheckBox,
     QScrollArea, QSplitter, QMessageBox, QFileDialog, QFrame, QGraphicsScene,
-    QGraphicsView, QInputDialog, QDialog
+    QGraphicsView, QInputDialog, QDialog, QTreeWidget, QTreeWidgetItem
 )
-
-
-# ──────────────────────────────────────────────────────────────────────────────
-# App‑level configuration
-# ──────────────────────────────────────────────────────────────────────────────
-APP_TITLE = "Flight Checklist Companion"
-ORG_NAME = "ExampleAviationTools"
-ORG_DOMAIN = "example.com"
-
-DATA_DIR = Path(__file__).with_suffix("").parent / "data"  # ~/flight_app/data
-CHECKLIST_DIR = DATA_DIR / "checklists"
-ATC_DIR = DATA_DIR / "atc"
-CHART_DIR = DATA_DIR / "charts"
-NOTES_DIR = DATA_DIR / "notes"
-FILE_ENCODING = "utf-8"
-PRIMARY_COLOR = "#2e86de"
-
-IMG_EXTS = (".png", ".jpg", ".jpeg", ".bmp")
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Utility helpers
 # ──────────────────────────────────────────────────────────────────────────────
+def resource_path(relative_path: str) -> Path:
+    if getattr(sys, 'frozen', False):
+        # 打包后的可执行文件路径
+        return Path(sys.executable).parent / relative_path
+    else:
+        # 普通运行（.py）
+        return Path(__file__).resolve().parent / relative_path
 
 def ensure_dir(p: Path) -> Path:
     p.mkdir(parents=True, exist_ok=True)
@@ -81,6 +71,24 @@ def yes_no(parent: QWidget, title: str, text: str) -> bool:
         QMessageBox.question(parent, title, text, QMessageBox.Yes | QMessageBox.No)
         == QMessageBox.Yes
     )
+
+# ──────────────────────────────────────────────────────────────────────────────
+# App‑level configuration
+# ──────────────────────────────────────────────────────────────────────────────
+APP_TITLE = "Flight Checklist Companion"
+ORG_NAME = "ExampleAviationTools"
+ORG_DOMAIN = "example.com"
+
+DATA_DIR = resource_path("data")
+print(DATA_DIR)
+CHECKLIST_DIR = DATA_DIR / "checklists"
+ATC_DIR = DATA_DIR / "atc"
+CHART_DIR = DATA_DIR / "charts"
+NOTES_DIR = DATA_DIR / "notes"
+FILE_ENCODING = "utf-8"
+PRIMARY_COLOR = "#2e86de"
+
+IMG_EXTS = (".png", ".jpg", ".jpeg", ".bmp")
 
 # ──────────────────────────────────────────────────────────────────────────────
 # JSON persistence managers
@@ -450,19 +458,27 @@ class ChecklistWidget(QGroupBox):
         self.stage_cmb.setPlaceholderText("无阶段")
 
         hdr = QHBoxLayout()
-        hdr.addWidget(self.ac_cmb, 4)      # 增加占比
+        hdr.addWidget(self.ac_cmb, 4)
         hdr.addWidget(self.stage_cmb, 3)
         hdr.addWidget(new_btn, 1)
         hdr.addWidget(edit_btn, 1)
         hdr.addWidget(del_btn, 1)
 
-        # dynamic checklist area
-        self.area = QWidget()
-        self.vbox = QVBoxLayout(self.area)
-        self.vbox.addStretch()
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setWidget(self.area)
+        self.tree = QTreeWidget()
+        self.tree.setHeaderHidden(True)
+
+        # —— 追加一行样式表 —— 
+        self.tree.setAlternatingRowColors(False)          # 关掉交替行背景
+        self.tree.setStyleSheet("""
+            QTreeView::branch { image: none; }            /* 去图标 */
+            QTreeView::branch:closed,
+            QTreeView::branch:open  { margin: 0px; }      /* 防止占位 */
+            QTreeWidget::item:disabled {
+                color: #7B7979;
+                background: transparent;
+                selection-background-color: transparent;
+            }
+        """)
 
         self.next_btn = QPushButton("下一阶段 →")
         self.reset_btn = QPushButton("还原检查单")
@@ -471,15 +487,11 @@ class ChecklistWidget(QGroupBox):
         btn_row.addWidget(self.next_btn)
         btn_row.addWidget(self.reset_btn)
 
-        btn_row_widget = QWidget()
-        btn_row_widget.setLayout(btn_row)
-
         lay = QVBoxLayout(self)
         lay.addLayout(hdr)
-        lay.addWidget(scroll)
-        lay.addWidget(btn_row_widget) 
+        lay.addWidget(self.tree)
+        lay.addLayout(btn_row)
 
-        # signals
         self.ac_cmb.currentTextChanged.connect(self._ac_changed)
         self.stage_cmb.currentIndexChanged.connect(self._stage_changed)
         self.next_btn.clicked.connect(self._next_stage)
@@ -487,12 +499,13 @@ class ChecklistWidget(QGroupBox):
         edit_btn.clicked.connect(self._edit_ac)
         del_btn.clicked.connect(self._del_ac)
         self.reset_btn.clicked.connect(self._reset_checks)
-        
+
+        # self.tree.itemChanged.connect(self._update_next_btn)
+        self.tree.itemChanged.connect(self._on_item_changed)
         self._refresh_ac(first=True)
 
-    # CRUD --------------------------------------------------------------
     def _new_ac(self):
-        from checklist_editor import ChecklistEditor  # lazy import
+        from checklist_editor import ChecklistEditor
         name, ok = QInputDialog.getText(self, "机型名称", "输入新机型名称：")
         if not ok or not name.strip():
             return
@@ -524,7 +537,6 @@ class ChecklistWidget(QGroupBox):
             self.mgr.delete(ac)
             self._refresh_ac(first=True)
 
-    # refresh -----------------------------------------------------------
     def _refresh_ac(self, first=False):
         self.ac_cmb.blockSignals(True)
         self.ac_cmb.clear()
@@ -532,18 +544,17 @@ class ChecklistWidget(QGroupBox):
         self.ac_cmb.blockSignals(False)
         if first and self.ac_cmb.count():
             self.ac_cmb.setCurrentIndex(0)
-            self._ac_changed(self.ac_cmb.currentText()) 
+            self._ac_changed(self.ac_cmb.currentText())
             self._stage_changed(self.stage_cmb.currentIndex())
         elif self.ac_cmb.count() == 0:
             self._populate_empty()
 
     def _populate_empty(self):
         self.stage_cmb.clear()
-        self._clear_checks()
-        self.vbox.addWidget(QLabel("无检查单", alignment=Qt.AlignCenter))
+        self.tree.clear()
+        #self.tree.addTopLevelItem(QTreeWidgetItem(["无检查单"]))
         self.next_btn.setEnabled(False)
 
-    # stage / checks ----------------------------------------------------
     def _ac_changed(self, ac):
         data = self.mgr.read(ac)
         stages = [s["name"] for s in data.get("stages", [])]
@@ -563,32 +574,99 @@ class ChecklistWidget(QGroupBox):
             stage = data["stages"][idx]
         except IndexError:
             self._populate_empty()
-            self.next_btn.setEnabled(False)
             return
-        self._build_checks(stage["items"])
+        self._build_tree(stage["items"])
 
-    def _build_checks(self, items):
-        self._clear_checks()
+    def _build_tree(self, items: list[dict]):
+        self.tree.blockSignals(True)
+        self.tree.clear()
+
+        parents = {0: self.tree.invisibleRootItem()}
         for it in items:
-            cb = QCheckBox(it)
-            cb.stateChanged.connect(self._update_next_btn)
-            self.vbox.addWidget(cb)
-        self.vbox.addStretch()
-        self._update_next_btn()
+            if isinstance(it, str):
+                text, level, optional = it, 0, False
+            else:
+                text = it.get("text", "")
+                level = it.get("level", 0)
+                optional = it.get("optional", False)
 
-    def _clear_checks(self):
-        while self.vbox.count():
-            itm = self.vbox.takeAt(0)
-            if w := itm.widget():
-                w.deleteLater()
+            item = QTreeWidgetItem()
+            item.setText(0, text)
+            item.setCheckState(0, Qt.Unchecked)
+            item.setData(0, Qt.UserRole, optional)
+
+            parents.get(level, self.tree.invisibleRootItem()).addChild(item)
+            parents[level + 1] = item
+
+        self.tree.blockSignals(False)
+        self._update_next_btn()
+        
+        self.tree.setItemsExpandable(False)  # 禁止点击三角展开
+        self.tree.setRootIsDecorated(False)  # 去掉前导展开图标
+        self.tree.setExpandsOnDoubleClick(False)  # 禁止双击展开
+        self.tree.expandAll()                   # 展开所有
+
+        def lock_children_if_parent_optional(item: QTreeWidgetItem):
+            parent_opt_checked = (
+                item.data(0, Qt.UserRole) and item.checkState(0) == Qt.Checked
+            )
+            for i in range(item.childCount()):
+                child = item.child(i)
+                # 如果父是可选且未勾选 → 子项禁用
+                if item.data(0, Qt.UserRole) and item.checkState(0) != Qt.Checked:
+                    child.setFlags(child.flags() & ~Qt.ItemIsUserCheckable)
+                    child.setForeground(0, QBrush(Qt.gray))   
+                else:
+                    child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
+                    child.setForeground(0, QBrush(Qt.black))
+                lock_children_if_parent_optional(child)
+
+        for i in range(self.tree.topLevelItemCount()):
+            lock_children_if_parent_optional(self.tree.topLevelItem(i))
+
+        # 为未勾选的可选父节点设为灰色文字
+        def apply_gray_for_optional_parents(item: QTreeWidgetItem):
+            if bool(item.data(0, Qt.UserRole)) and item.checkState(0) != Qt.Checked:
+                item.setForeground(0, QBrush(Qt.gray))  # ← 修改：不再依赖子节点禁用状态
+            else:
+                item.setForeground(0, Qt.black)
+
+            for i in range(item.childCount()):
+                apply_gray_for_optional_parents(item.child(i))
+
+        for i in range(self.tree.topLevelItemCount()):
+            apply_gray_for_optional_parents(self.tree.topLevelItem(i))
+        
+        for i in range(self.tree.topLevelItemCount()):
+            self._update_color(self.tree.topLevelItem(i))
+        
 
     def _update_next_btn(self):
-        ok = all(
-            isinstance(self.vbox.itemAt(i).widget(), QCheckBox)
-            and self.vbox.itemAt(i).widget().isChecked()
-            for i in range(self.vbox.count() - 1)
-        )
-        self.next_btn.setEnabled(ok)
+        def check_node(node: QTreeWidgetItem):
+            ok = True
+            for i in range(node.childCount()):
+                ok &= check_node(node.child(i))
+            optional = node.data(0, Qt.UserRole)
+            parent = node.parent()
+
+            if optional:
+                # 如果是可选项，且父存在
+                if parent:
+                    parent_optional = parent.data(0, Qt.UserRole)
+                    parent_checked = parent.checkState(0) == Qt.Checked
+                    if parent_optional and not parent_checked:
+                        # 禁止可选子项在父未勾选时被勾选
+                        if node.checkState(0) == Qt.Checked:
+                            node.setCheckState(0, Qt.Unchecked)
+                # 可选项不影响判断
+                return ok
+            else:
+                # 非可选项必须被勾选
+                return ok and node.checkState(0) == Qt.Checked
+        all_ok = True
+        for i in range(self.tree.topLevelItemCount()):
+            all_ok &= check_node(self.tree.topLevelItem(i))
+        self.next_btn.setEnabled(all_ok)
 
     def _next_stage(self):
         i = self.stage_cmb.currentIndex()
@@ -603,16 +681,56 @@ class ChecklistWidget(QGroupBox):
 
         for i in range(self.stage_cmb.count()):
             self.stage_cmb.setCurrentIndex(i)
-            QApplication.processEvents()  # 强制刷新 UI
-            for j in range(self.vbox.count() - 1):
-                w = self.vbox.itemAt(j).widget()
-                if isinstance(w, QCheckBox):
-                    w.setChecked(False)
-
-        # 回到第一个阶段
+            QApplication.processEvents()
+            def clear_node(node):
+                node.setCheckState(0, Qt.Unchecked)
+                for j in range(node.childCount()):
+                    clear_node(node.child(j))
+            for j in range(self.tree.topLevelItemCount()):
+                clear_node(self.tree.topLevelItem(j))
         if self.stage_cmb.count() > 0:
             self.stage_cmb.setCurrentIndex(0)
 
+    # 勾选变化时，更新所有可选父节点的颜色
+    def _update_color(self, item: QTreeWidgetItem):
+        """可选节点：未勾选=灰，勾选=黑；必选节点恒黑"""
+        if item.data(0, Qt.UserRole):                       # 可选节点
+            item.setForeground(
+                0, Qt.black if item.checkState(0) == Qt.Checked else QBrush("#7B7979")
+            )
+        else:                                               # 必选节点
+            item.setForeground(0, Qt.black)
+
+        # 递归处理子节点
+        for i in range(item.childCount()):
+            self._update_color(item.child(i))
+        
+    def _on_item_changed(self, itm: QTreeWidgetItem, col: int):
+        
+
+        # 向上追踪所有祖先节点（可能变化）
+        node = itm
+        while node:
+            self._update_color(node)
+            node = node.parent()
+
+        # 同时更新子树（这个是已有的）
+        self._update_color(itm)
+
+        # 原有逻辑保留
+        def lock_children(parent):
+            for i in range(parent.childCount()):
+                child = parent.child(i)
+                if parent.data(0, Qt.UserRole) and parent.checkState(0) != Qt.Checked:
+                    child.setFlags(child.flags() & ~Qt.ItemIsUserCheckable)
+                    child.setForeground(0, QBrush(Qt.gray))
+                else:
+                    child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
+                    child.setForeground(0, QBrush(Qt.black))
+                lock_children(child)
+
+        lock_children(itm)
+        self._update_next_btn()
 # ──────────────────────────────────────────────────────────────────────────────
 # ATC widget (middle column)
 # ──────────────────────────────────────────────────────────────────────────────
