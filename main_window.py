@@ -93,7 +93,7 @@ IMG_EXTS = (".png", ".jpg", ".jpeg", ".bmp")
 # ──────────────────────────────────────────────────────────────────────────────
 # JSON persistence managers
 # ──────────────────────────────────────────────────────────────────────────────
-class ChecklistManager:
+class ChecklistManager:#5A5858
     """Simple JSON storage `data/checklists/<ac>/checklist.json"""
 
     def __init__(self):
@@ -476,7 +476,7 @@ class ChecklistWidget(QGroupBox):
             QTreeView::branch:closed,
             QTreeView::branch:open  { margin: 0px; }      /* 防止占位 */
             QTreeWidget::item:disabled {
-                color: #7B7979;
+                color: #5A5858;
                 background: transparent;
                 selection-background-color: transparent;
             }
@@ -618,22 +618,24 @@ class ChecklistWidget(QGroupBox):
         self.tree.expandAll()                   # 展开所有
 
         def lock_children_if_parent_optional(item: QTreeWidgetItem):
-            parent_opt_checked = (
-                item.data(0, Qt.UserRole) and item.checkState(0) == Qt.Checked
-            )
+            parent_optional = item.data(0, Qt.UserRole)
+            parent_checked  = item.checkState(0) == Qt.Checked
+        
             for i in range(item.childCount()):
                 child = item.child(i)
-                # 如果父是可选且未勾选 → 子项禁用
-                if item.data(0, Qt.UserRole) and item.checkState(0) != Qt.Checked:
+        
+                if parent_optional and not parent_checked:
+                    # 父是可选且未勾选 → 递归取消勾选 & 灰化禁用
+                    child.setCheckState(0, Qt.Unchecked)         # ❶ 递归取消勾选
                     child.setFlags(child.flags() & ~Qt.ItemIsUserCheckable)
-                    child.setForeground(0, QBrush(Qt.gray))   
+                    child.setForeground(0, QBrush(Qt.gray))
                 else:
                     child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
-                    child.setForeground(0, QBrush(Qt.black))
-                lock_children_if_parent_optional(child)
-
-        for i in range(self.tree.topLevelItemCount()):
-            lock_children_if_parent_optional(self.tree.topLevelItem(i))
+        
+                lock_children_if_parent_optional(child)          # 递归
+        
+                for i in range(self.tree.topLevelItemCount()):
+                    lock_children_if_parent_optional(self.tree.topLevelItem(i))
 
         # 为未勾选的可选父节点设为灰色文字
         def apply_gray_for_optional_parents(item: QTreeWidgetItem):
@@ -709,12 +711,17 @@ class ChecklistWidget(QGroupBox):
 
     # 勾选变化时，更新所有可选父节点的颜色
     def _update_color(self, item: QTreeWidgetItem):
-        """可选节点：未勾选=灰，勾选=黑；必选节点恒黑"""
-        if item.data(0, Qt.UserRole):                       # 可选节点
+        """可选节点：未勾选=灰，勾选=黑；必选节点恒黑；禁用项恒灰"""
+        if not item.flags() & Qt.ItemIsUserCheckable:
+            # 如果当前节点已被禁用（即使是可选），统一为灰色
+            item.setForeground(0, QBrush(Qt.gray))
+            return
+
+        if item.data(0, Qt.UserRole):  # 可选节点
             item.setForeground(
-                0, Qt.black if item.checkState(0) == Qt.Checked else QBrush("#7B7979")
+                0, Qt.black if item.checkState(0) == Qt.Checked else QBrush("#5A5858")
             )
-        else:                                               # 必选节点
+        else:
             item.setForeground(0, Qt.black)
 
         # 递归处理子节点
@@ -735,14 +742,16 @@ class ChecklistWidget(QGroupBox):
             def lock_children(parent):
                 for i in range(parent.childCount()):
                     child = parent.child(i)
+
                     if parent.data(0, Qt.UserRole) and parent.checkState(0) != Qt.Checked:
+                        child.setCheckState(0, Qt.Unchecked)         # ❷ 递归取消勾选
                         child.setFlags(child.flags() & ~Qt.ItemIsUserCheckable)
                         child.setForeground(0, QBrush(Qt.gray))
-                        child.setCheckState(0, Qt.Unchecked)  # 强制取消勾选
                     else:
                         child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
-                        child.setForeground(0, QBrush(Qt.black))
-                    lock_children(child)
+                        self._update_color(child)
+
+                    lock_children(child)  
 
             lock_children(itm)
             self._update_next_btn()
