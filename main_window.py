@@ -41,7 +41,7 @@ from itertools import chain
 from pathlib import Path
 from typing import Any, Dict, List
 
-from PySide6.QtCore import Qt, QRectF, QMimeData, QTimer
+from PySide6.QtCore import Qt, QRectF, QMimeData, QTimer, QSignalBlocker
 from PySide6.QtGui import QPixmap, QWheelEvent, QDragEnterEvent, QDropEvent, QPainter, QMouseEvent, QBrush
 from PySide6.QtWidgets import (
     QApplication, QWidget, QGroupBox, QHBoxLayout, QVBoxLayout, QGridLayout,
@@ -467,6 +467,8 @@ class ChecklistWidget(QGroupBox):
         self.tree = QTreeWidget()
         self.tree.setHeaderHidden(True)
 
+        self._mandatory_left = 0  # 未完成的必选项数量
+
         # —— 追加一行样式表 —— 
         self.tree.setAlternatingRowColors(False)          # 关掉交替行背景
         self.tree.setStyleSheet("""
@@ -585,6 +587,7 @@ class ChecklistWidget(QGroupBox):
         self._build_tree(stage["items"])
 
     def _build_tree(self, items: list[dict]):
+        self.tree.setUpdatesEnabled(False)  # ← 开始屏蔽绘制
         self.tree.blockSignals(True)
         self.tree.clear()
 
@@ -606,6 +609,7 @@ class ChecklistWidget(QGroupBox):
             parents[level + 1] = item
 
         self.tree.blockSignals(False)
+        self.tree.setUpdatesEnabled(True)   # ← 结束后统一刷新界面
         self._update_next_btn()
         
         self.tree.setItemsExpandable(False)  # 禁止点击三角展开
@@ -718,42 +722,48 @@ class ChecklistWidget(QGroupBox):
             self._update_color(item.child(i))
         
     def _on_item_changed(self, itm: QTreeWidgetItem, col: int):
-        
+        with QSignalBlocker(self.tree):  # 阻止 itemChanged 循环触发
+            # 更新祖先颜色
+            node = itm
+            while node:
+                self._update_color(node)
+                node = node.parent()
 
-        # 向上追踪所有祖先节点（可能变化）
-        node = itm
-        while node:
-            self._update_color(node)
-            node = node.parent()
+            # 更新自身和子树
+            self._update_color(itm)
 
-        # 同时更新子树（这个是已有的）
-        self._update_color(itm)
+            def lock_children(parent):
+                for i in range(parent.childCount()):
+                    child = parent.child(i)
+                    if parent.data(0, Qt.UserRole) and parent.checkState(0) != Qt.Checked:
+                        child.setFlags(child.flags() & ~Qt.ItemIsUserCheckable)
+                        child.setForeground(0, QBrush(Qt.gray))
+                        child.setCheckState(0, Qt.Unchecked)  # 强制取消勾选
+                    else:
+                        child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
+                        child.setForeground(0, QBrush(Qt.black))
+                    lock_children(child)
 
-        # 原有逻辑保留
-        def lock_children(parent):
-            for i in range(parent.childCount()):
-                child = parent.child(i)
-                if parent.data(0, Qt.UserRole) and parent.checkState(0) != Qt.Checked:
-                    child.setFlags(child.flags() & ~Qt.ItemIsUserCheckable)
-                    child.setForeground(0, QBrush(Qt.gray))
-                else:
-                    child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
-                    child.setForeground(0, QBrush(Qt.black))
-                lock_children(child)
-
-        lock_children(itm)
-        self._update_next_btn()
+            lock_children(itm)
+            self._update_next_btn()
     
     def _complete_checks(self):
-        def check_all(item: QTreeWidgetItem):
-            item.setCheckState(0, Qt.Checked)
-            for i in range(item.childCount()):
-                check_all(item.child(i))
+        self.tree.setUpdatesEnabled(False)
+        self.tree.blockSignals(True)
 
-        for i in range(self.tree.topLevelItemCount()):
-            check_all(self.tree.topLevelItem(i))
+        with QSignalBlocker(self.tree): # 批量勾选时关闭信号
+            def check_all(item: QTreeWidgetItem):
+                item.setCheckState(0, Qt.Checked)
+                for i in range(item.childCount()):
+                    check_all(item.child(i))
 
+            for i in range(self.tree.topLevelItemCount()):
+                check_all(self.tree.topLevelItem(i))
+
+        self.tree.blockSignals(False)
+        self.tree.setUpdatesEnabled(True)
         self._update_next_btn()
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ATC widget (middle column)
 # ──────────────────────────────────────────────────────────────────────────────

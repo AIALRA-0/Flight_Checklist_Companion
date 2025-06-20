@@ -108,6 +108,9 @@ class _TreeItemRow(QWidget):
         })
         itm.setSizeHint(row.sizeHint())
         self.lw.setItemWidget(itm, row)
+
+        # 继承父节点“可选”状态并灰化
+        row._sync_optional_with_parent(idx + 1)
         
     def _remove(self):
         if self.lw.count() == 1:
