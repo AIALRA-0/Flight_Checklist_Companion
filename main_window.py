@@ -743,6 +743,7 @@ class ATCWidget(QGroupBox):
 
         self.cmb = QComboBox()
         new_btn = QPushButton("新建…")
+        edit_btn = QPushButton("编辑…")
         del_btn = QPushButton("删除") 
 
         self.cmb.setPlaceholderText("无可用ATC对话模板")
@@ -750,6 +751,7 @@ class ATCWidget(QGroupBox):
         hdr = QHBoxLayout()
         hdr.addWidget(self.cmb, 3)
         hdr.addWidget(new_btn)
+        hdr.addWidget(edit_btn)
         hdr.addWidget(del_btn)  
 
         self.cn = QTextEdit(readOnly=True)
@@ -764,6 +766,7 @@ class ATCWidget(QGroupBox):
 
         self.cmb.currentIndexChanged.connect(self._show)
         new_btn.clicked.connect(self._new_tpl)
+        edit_btn.clicked.connect(self._edit_tpl)
         del_btn.clicked.connect(self._del) 
 
     def load(self, ac: str, stage: str):
@@ -810,6 +813,18 @@ class ATCWidget(QGroupBox):
         data["templates"].remove(self.tpls[idx])
         self.mgr.write(self.ac, data)
         self.load(self.ac, self.stage)
+    
+    def _edit_tpl(self):
+        from atc_editor import ATCEditor  # lazy import
+        if not self.tpls:
+            QMessageBox.warning(self, "无模板", "当前没有可编辑的 ATC 模板。")
+            return
+        idx = self.cmb.currentIndex()
+        if idx < 0 or idx >= len(self.tpls):
+            return
+        tpl = self.tpls[idx]
+        if ATCEditor(self, self.mgr, self.ac, self.stage, tpl).exec():
+            self.load(self.ac, self.stage)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Main application window

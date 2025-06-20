@@ -31,7 +31,7 @@ from main_window import ATCManager
 
 
 class ATCEditor(QDialog):
-    def __init__(self, parent, mgr: ATCManager, aircraft: str, stage: str):
+    def __init__(self, parent, mgr: ATCManager, aircraft: str, stage: str, tpl: dict | None = None):
         super().__init__(parent)
         self.setWindowTitle("新建 ATC 模板")
         self.resize(420, 320)
@@ -42,6 +42,18 @@ class ATCEditor(QDialog):
         self.cn_edit = QTextEdit()
         self.en_edit = QTextEdit()
         save_btn = QPushButton("保存")
+
+        self.is_edit = tpl is not None
+        self.tpl = tpl
+
+        if self.is_edit:
+            self.setWindowTitle("编辑 ATC 模板")
+            self.name_edit.setText(tpl.get("name", ""))
+            self.name_edit.setDisabled(True)  # 名称不可改
+            self.cn_edit.setPlainText(tpl.get("cn", ""))
+            self.en_edit.setPlainText(tpl.get("en", ""))
+        else:
+            self.setWindowTitle("新建 ATC 模板")
 
         lay = QVBoxLayout(self)
         lay.addWidget(QLabel("模板名称"))
@@ -73,16 +85,26 @@ class ATCEditor(QDialog):
             t["name"] for t in self.mgr.read(self.ac).get("templates", [])
             if t.get("stage") == self.stage
         ]
-        if name in existing_names:
+        if not self.is_edit and name in existing_names:
             QMessageBox.warning(self, "重复名称", "该模板名称在当前阶段已存在。")
             return
 
         data = self.mgr.read(self.ac)
-        data.setdefault("templates", []).append({
-            "name": name,
-            "stage": self.stage,
-            "cn": cn,
-            "en": en
-        })
+        if self.is_edit:
+            # 编辑模式：更新已有项
+            for t in data.get("templates", []):
+                if t.get("name") == self.tpl.get("name") and t.get("stage") == self.stage:
+                    t["cn"] = cn
+                    t["en"] = en
+                    break
+        else:
+            # 新建模式：追加新项
+            data.setdefault("templates", []).append({
+                "name": name,
+                "stage": self.stage,
+                "cn": cn,
+                "en": en
+            })
+
         self.mgr.write(self.ac, data)
         self.accept()
