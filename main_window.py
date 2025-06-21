@@ -20,16 +20,16 @@ Flight Checklist Companion – 主窗口 GUI 模块
     - ATCWidget     ：ATC 对话模板浏览器与编辑器
     - MainWindow    ：主界面，协调所有部件
 - CLI 入口点：
-    - `main()` 作为启动函数，初始化 QApplication 并显示 MainWindow
+    - main() 作为启动函数，初始化 QApplication 并显示 MainWindow
 
 📁 模块依赖：
-- `checklist_editor.py`：Checklist 编辑器，按需引入避免循环依赖
-- `atc_editor.py`：ATC 模板编辑器，按需引入避免循环依赖
-- `data/` 文件夹用于本地数据持久化，包括 checklists, atc, charts, notes 等
+- checklist_editor.py：Checklist 编辑器，按需引入避免循环依赖
+- atc_editor.py：ATC 模板编辑器，按需引入避免循环依赖
+- data/ 文件夹用于本地数据持久化，包括 checklists, atc, charts, notes 等
 
 ⚠️ 注意事项：
 - 所有数据均为本地持久化，不依赖远程服务器
-- 该模块为 GUI 中心，不建议直接测试；测试请参考 `test_gui.py`
+- 该模块为 GUI 中心，不建议直接测试；测试请参考 test_gui.py
 """
 
 from __future__ import annotations
@@ -94,7 +94,7 @@ IMG_EXTS = (".png", ".jpg", ".jpeg", ".bmp")
 # JSON persistence managers
 # ──────────────────────────────────────────────────────────────────────────────
 class ChecklistManager:#5A5858
-    """Simple JSON storage `data/checklists/<ac>/checklist.json"""
+    """Simple JSON storage data/checklists/<ac>/checklist.json"""
 
     def __init__(self):
         self.root = ensure_dir(CHECKLIST_DIR)
@@ -116,7 +116,7 @@ class ChecklistManager:#5A5858
 
 
 class ATCManager:
-    """Simple JSON storage `data/atc/<ac>/atc.json"""
+    """Simple JSON storage data/atc/<ac>/atc.json"""
 
     def __init__(self):
         self.root = ensure_dir(ATC_DIR)
@@ -456,6 +456,8 @@ class ChecklistWidget(QGroupBox):
 
         self.ac_cmb.setPlaceholderText("无检查单")
         self.stage_cmb.setPlaceholderText("无阶段")
+        self._checked_memory: dict[str, dict[str, set[str]]] = {}
+        self._last_stage_name: str | None = None
 
         hdr = QHBoxLayout()
         hdr.addWidget(self.ac_cmb, 4)
@@ -565,6 +567,8 @@ class ChecklistWidget(QGroupBox):
         self.next_btn.setEnabled(False)
 
     def _ac_changed(self, ac):
+        self._save_current_stage_state()
+        self._update_memory_check_state()
         data = self.mgr.read(ac)
         stages = [s["name"] for s in data.get("stages", [])]
         self.stage_cmb.blockSignals(True)
@@ -575,8 +579,12 @@ class ChecklistWidget(QGroupBox):
             self.stage_cmb.setCurrentIndex(0)
         else:
             self._populate_empty()
+        self._last_stage_name = self.stage_cmb.currentText()
 
     def _stage_changed(self, idx):
+        previous_stage = self._last_stage_name  # ← 提前保存旧阶段
+        self._save_current_stage_state(stage_name=previous_stage)
+
         ac = self.ac_cmb.currentText()
         data = self.mgr.read(ac)
         try:
@@ -585,6 +593,7 @@ class ChecklistWidget(QGroupBox):
             self._populate_empty()
             return
         self._build_tree(stage["items"])
+        self._last_stage_name = self.stage_cmb.currentText()  # ← 更新为新阶段
 
     def _build_tree(self, items: list[dict]):
         self.tree.setUpdatesEnabled(False)  # ← 开始屏蔽绘制
@@ -602,7 +611,11 @@ class ChecklistWidget(QGroupBox):
 
             item = QTreeWidgetItem()
             item.setText(0, text)
-            item.setCheckState(0, Qt.Unchecked)
+            ac = self.ac_cmb.currentText()
+            stage = self.stage_cmb.currentText()
+            mem_checked = self._checked_memory.get(ac, {}).get(stage, set())
+            
+            item.setCheckState(0, Qt.Checked if text in mem_checked else Qt.Unchecked)     
             item.setData(0, Qt.UserRole, optional)
 
             parents.get(level, self.tree.invisibleRootItem()).addChild(item)
@@ -698,15 +711,23 @@ class ChecklistWidget(QGroupBox):
             for item in stage["items"]:
                 if isinstance(item, dict):
                     item["checked"] = False  # 可用于后续持久化状态（可选）
-
-        # 刷新当前显示阶段的 UI
-        self._stage_changed(self.stage_cmb.currentIndex())
-
+        
+        self.mgr.write(ac, data) 
+        if ac in self._checked_memory:
+            self._checked_memory[ac].clear()
+            
         # 跳转回首页
         self.stage_cmb.setCurrentIndex(0)
 
+        # 刷新当前显示阶段的 UI
+        self._stage_changed(0)        
+
         # 如需真正保存 reset 状态到文件，可加入：
         # self.mgr.write(ac, data)
+        self.mgr.write(ac, data)
+
+        if ac in self._checked_memory:
+            self._checked_memory[ac].clear()
         
 
     # 勾选变化时，更新所有可选父节点的颜色
@@ -755,6 +776,7 @@ class ChecklistWidget(QGroupBox):
 
             lock_children(itm)
             self._update_next_btn()
+            self._update_memory_check_state()
     
     def _complete_checks(self):
         self.tree.setUpdatesEnabled(False)
@@ -774,6 +796,49 @@ class ChecklistWidget(QGroupBox):
         self.tree.blockSignals(False)
         self.tree.setUpdatesEnabled(True)
         self._update_next_btn()
+    
+    def _update_memory_check_state(self):
+        ac = self.ac_cmb.currentText()
+        stage = self.stage_cmb.currentText()
+        if not ac or not stage:
+            return
+        if ac not in self._checked_memory:
+            self._checked_memory[ac] = {}
+        if stage not in self._checked_memory[ac]:
+            self._checked_memory[ac][stage] = set()
+
+        checked_set = self._checked_memory[ac][stage]
+        checked_set.clear()
+
+        def collect(item):
+            if item.checkState(0) == Qt.Checked:
+                checked_set.add(item.text(0))
+            for i in range(item.childCount()):
+                collect(item.child(i))
+
+        for i in range(self.tree.topLevelItemCount()):
+            collect(self.tree.topLevelItem(i))
+        
+    def _save_current_stage_state(self, stage_name: str | None = None):
+        ac = self.ac_cmb.currentText()
+        stage = stage_name or self._last_stage_name
+        if not ac or not stage:
+            return
+        if ac not in self._checked_memory:
+            self._checked_memory[ac] = {}
+        self._checked_memory[ac][stage] = set()
+
+        checked_set = self._checked_memory[ac][stage]
+        checked_set.clear()
+
+        def collect(item):
+            if item.checkState(0) == Qt.Checked:
+                checked_set.add(item.text(0))
+            for i in range(item.childCount()):
+                collect(item.child(i))
+
+        for i in range(self.tree.topLevelItemCount()):
+            collect(self.tree.topLevelItem(i))
 
 # ──────────────────────────────────────────────────────────────────────────────
 # ATC widget (middle column)
@@ -971,7 +1036,6 @@ class MainWindow(QWidget):
         self.atc_w.load(ac, stage)
         self._load_stage_note(ac, stage)
         QTimer.singleShot(0, lambda: self._stage_changed(self.check_w.stage_cmb.currentText()))
-
 
     def _stage_changed(self, st):
         ac = self.check_w.ac_cmb.currentText()
