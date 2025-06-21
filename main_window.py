@@ -577,6 +577,7 @@ class ChecklistWidget(QGroupBox):
         self.stage_cmb.blockSignals(False)
         if stages:
             self.stage_cmb.setCurrentIndex(0)
+            self._stage_changed(0) 
         else:
             self._populate_empty()
         self._last_stage_name = self.stage_cmb.currentText()
@@ -716,20 +717,22 @@ class ChecklistWidget(QGroupBox):
         if ac in self._checked_memory:
             self._checked_memory[ac].clear()
         
+        self.tree.clear()
+        
         self.stage_cmb.setCurrentIndex(0)
 
         # 保存当前 stage index 和 name
         cur_idx = self.stage_cmb.currentIndex()
         cur_stage_name = self.stage_cmb.currentText()
         self._last_stage_name = cur_stage_name  # ← 手动更新（关键）
-
+        
         # 强制刷新当前阶段（不管是不是第一页）
         try:
             items = data["stages"][cur_idx]["items"]
         except IndexError:
             self._populate_empty()
             return
-
+        
         self._build_tree(items)
         
 
