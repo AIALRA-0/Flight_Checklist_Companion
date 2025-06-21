@@ -119,7 +119,9 @@
 
 **界面示意：**
 
-<img src="https://github.com/user-attachments/assets/62e0052b-4a41-4326-8138-0c7e768746c5" alt="Notes" width="600"/>
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/62e0052b-4a41-4326-8138-0c7e768746c5" alt="Notes" width="600"/>
+</div>
 
 ---
 ### 🧳 航线配置模板（Route Template Packs）
@@ -129,7 +131,7 @@
 * 当前可用示例：
 
   * `B777.zip`：波音 777 启动检查单
-  * <img src="https://github.com/user-attachments/assets/2147e861-7215-41fd-9ef7-576af3d0227d" alt="Notes" width="600"/>
+    <img src="https://github.com/user-attachments/assets/e4998c76-9393-4856-afec-2a4ea129e1c9" alt="Notes" width="600"/>
 
 
 #### 使用方式：
