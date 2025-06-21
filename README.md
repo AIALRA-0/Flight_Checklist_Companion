@@ -122,7 +122,7 @@
 <img src="https://github.com/user-attachments/assets/62e0052b-4a41-4326-8138-0c7e768746c5" alt="Notes" width="1200"/>
 
 ---
-## 🧳 航线配置模板（Route Template Packs）
+### 🧳 航线配置模板（Route Template Packs）
 
 不定期提供不同机型/场景的示例配置包，便于快速体验和参考使用。
 
@@ -130,7 +130,7 @@
 
   * `B777.zip`：波音 777 启动检查单
 
-### 使用方式：
+#### 使用方式：
 
 1. 将所需的示例配置包放入项目目录下的 `save/` 文件夹；
 2. 启动程序后，在航线配置下拉框中即可看到该任务；
