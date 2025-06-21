@@ -715,19 +715,22 @@ class ChecklistWidget(QGroupBox):
         self.mgr.write(ac, data) 
         if ac in self._checked_memory:
             self._checked_memory[ac].clear()
-            
-        # 跳转回首页
+        
         self.stage_cmb.setCurrentIndex(0)
 
-        # 刷新当前显示阶段的 UI
-        self._stage_changed(0)        
+        # 保存当前 stage index 和 name
+        cur_idx = self.stage_cmb.currentIndex()
+        cur_stage_name = self.stage_cmb.currentText()
+        self._last_stage_name = cur_stage_name  # ← 手动更新（关键）
 
-        # 如需真正保存 reset 状态到文件，可加入：
-        # self.mgr.write(ac, data)
-        self.mgr.write(ac, data)
+        # 强制刷新当前阶段（不管是不是第一页）
+        try:
+            items = data["stages"][cur_idx]["items"]
+        except IndexError:
+            self._populate_empty()
+            return
 
-        if ac in self._checked_memory:
-            self._checked_memory[ac].clear()
+        self._build_tree(items)
         
 
     # 勾选变化时，更新所有可选父节点的颜色
