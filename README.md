@@ -119,7 +119,7 @@
 
 **界面示意：**
 
-<img src="https://github.com/user-attachments/assets/62e0052b-4a41-4326-8138-0c7e768746c5" alt="Notes" width="1200"/>
+<img src="https://github.com/user-attachments/assets/62e0052b-4a41-4326-8138-0c7e768746c5" alt="Notes" width="600"/>
 
 ---
 ### 🧳 航线配置模板（Route Template Packs）
@@ -129,6 +129,8 @@
 * 当前可用示例：
 
   * `B777.zip`：波音 777 启动检查单
+  * <img src="https://github.com/user-attachments/assets/2147e861-7215-41fd-9ef7-576af3d0227d" alt="Notes" width="600"/>
+
 
 #### 使用方式：
 
@@ -138,9 +140,6 @@
 > ⚠️ 加载示例配置将清除当前工作数据，请提前保存。
 
 ---
-
-这个结构清晰、便于日后维护（只需不断追加配置名），并能引导用户正确使用。如需，我也可以生成这个段落的中英文双语版本。需要吗？
-
 ## 🧩 项目结构
 
 ```bash
