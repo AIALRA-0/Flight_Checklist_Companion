@@ -129,7 +129,8 @@
 不定期提供不同机型/场景的示例配置包，便于快速体验和参考使用。
 
 - 当前可用示例：
-  - `B777.zip`：波音 777 启动检查单  
+  - `B777.zip`：波音 777 启动检查单
+      
     <img src="https://github.com/user-attachments/assets/e4998c76-9393-4856-afec-2a4ea129e1c9" alt="B777 示例" width="600"/>
 
 
