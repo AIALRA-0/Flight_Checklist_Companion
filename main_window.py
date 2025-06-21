@@ -763,6 +763,8 @@ class ChecklistWidget(QGroupBox):
         with QSignalBlocker(self.tree): # 批量勾选时关闭信号
             def check_all(item: QTreeWidgetItem):
                 item.setCheckState(0, Qt.Checked)
+                item.setFlags(item.flags() | Qt.ItemIsUserCheckable)  # 恢复可勾选
+                self._update_color(item)  # ← 添加颜色更新
                 for i in range(item.childCount()):
                     check_all(item.child(i))
 
