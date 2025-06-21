@@ -1070,6 +1070,8 @@ class MainWindow(QWidget):
         cur_name = self.route_cmb.currentText().strip()
         if cur_name:  # 已有选择，直接覆盖保存
             name = cur_name
+            if not yes_no(self, "覆盖确认", f"保存将会覆盖旧版本的航线配置，确认保存？"):
+             return
         else:
             name, ok = QInputDialog.getText(self, "保存航线配置", "输入配置名称：")
             if not ok or not name.strip():
@@ -1101,6 +1103,9 @@ class MainWindow(QWidget):
         zip_path = Path("save") / f"{sel}.zip"
         if not zip_path.exists():
             QMessageBox.warning(self, "错误", f"配置 {sel} 不存在")
+            return
+        
+        if not yes_no(self, "加载配置", f"加载配置“{sel}”将覆盖当前所有数据。\n是否继续？"):
             return
 
         # 清空原始 data 文件夹
