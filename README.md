@@ -11,8 +11,14 @@
 ---
 
 ## 🖼️ 主页预览
+### 桌面版
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/3601cdea-ed88-45f2-9008-103a072ceefb" alt="Main Window" width="1200"/>
+  <img src="https://github.com/user-attachments/assets/e2cf2956-0b5c-4f2e-869f-e0f1c0d68b1c" alt="Main Window" width="1200"/>
+</div>
+
+### 移动版
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/f000ebed-fe83-4c81-a2e6-e7a142e4ab0e" alt="Main Window" width="600"/>
 </div>
 
 
