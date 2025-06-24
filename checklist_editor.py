@@ -425,29 +425,38 @@ class ChecklistEditor(QDialog):
         idx = self.stage_list.currentRow()
         if idx <= 0:
             return
+
+        # 1️⃣ 先保存当前阶段项目 (A)
         self._write_items(idx)
 
-        # 数据交换
-        self.data["stages"][idx], self.data["stages"][idx - 1] = (
-            self.data["stages"][idx - 1], self.data["stages"][idx]
-        )
+        # 2️⃣ 交换 data 顺序
+        self.data["stages"][idx], self.data["stages"][idx-1] = \
+            self.data["stages"][idx-1], self.data["stages"][idx]
 
-        # 重建 UI
+        # 3️⃣ 重建左侧列表，但 **暂时屏蔽信号**
+        self.stage_list.blockSignals(True)
         self._reload_stage_list()
-        self.stage_list.setCurrentRow(idx - 1)
+        self.stage_list.setCurrentRow(idx-1)   # A 现在在 idx-1
+        self.stage_list.blockSignals(False)
+
+        # 4️⃣ 把内部指针修正到新的下标
+        self._cur_idx = idx-1
 
     def _move_stage_down(self):
         idx = self.stage_list.currentRow()
-        if idx < 0 or idx >= self.stage_list.count() - 1:
+        if idx < 0 or idx >= self.stage_list.count()-1:
             return
-        self._write_items(idx)
-
-        self.data["stages"][idx], self.data["stages"][idx + 1] = (
-            self.data["stages"][idx + 1], self.data["stages"][idx]
-        )
-
+    
+        self._write_items(idx)                        # 1️⃣
+        self.data["stages"][idx], self.data["stages"][idx+1] = \
+            self.data["stages"][idx+1], self.data["stages"][idx]  # 2️⃣
+    
+        self.stage_list.blockSignals(True)            # 3️⃣
         self._reload_stage_list()
-        self.stage_list.setCurrentRow(idx + 1)
+        self.stage_list.setCurrentRow(idx+1)
+        self.stage_list.blockSignals(False)
+    
+        self._cur_idx = idx+1                         # 4️⃣
     
     def _reload_stage_list(self):
         self.stage_list.clear()
