@@ -54,7 +54,7 @@
 
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/bd4d4f1f-77d9-40b7-9e8c-b01fe2286bb5" alt="Main Window" width="600"/>
+  <img src="https://github.com/user-attachments/assets/b4146644-4065-48d7-aa2c-584390fb31d5" alt="Main Window" width="600"/>
 </div>
 
 
