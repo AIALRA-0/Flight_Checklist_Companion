@@ -285,6 +285,8 @@ class ChecklistEditor(QDialog):
         self.stage_list = QListWidget()
         add_stage = QPushButton("添加阶段")
         del_stage = QPushButton("删除阶段")
+        move_up_stage = QPushButton("↑ 上移")
+        move_down_stage = QPushButton("↓ 下移")
 
         # 右侧项目列表
         self.item_list = QListWidget()
@@ -296,6 +298,8 @@ class ChecklistEditor(QDialog):
         left.addWidget(self.stage_list)
         left.addWidget(add_stage)
         left.addWidget(del_stage)
+        left.addWidget(move_up_stage)
+        left.addWidget(move_down_stage)
 
         right = QVBoxLayout()
         right.addWidget(QLabel("检查项目"))
@@ -321,6 +325,8 @@ class ChecklistEditor(QDialog):
         add_stage.clicked.connect(self._add_stage)
         del_stage.clicked.connect(self._del_stage)
         save_btn.clicked.connect(self._save_and_close)
+        move_up_stage.clicked.connect(self._move_stage_up)
+        move_down_stage.clicked.connect(self._move_stage_down)
 
     def reject(self):
         # 点击“×”时退出，若是新建流程则移除文件夹
@@ -415,3 +421,39 @@ class ChecklistEditor(QDialog):
         self.mgr.write(self.ac, self.data)
         self.accept()
     
+    def _move_stage_up(self):
+        idx = self.stage_list.currentRow()
+        if idx <= 0:
+            return
+        self._write_items(idx)
+
+        # 数据交换
+        self.data["stages"][idx], self.data["stages"][idx - 1] = (
+            self.data["stages"][idx - 1], self.data["stages"][idx]
+        )
+
+        # 重建 UI
+        self._reload_stage_list()
+        self.stage_list.setCurrentRow(idx - 1)
+
+    def _move_stage_down(self):
+        idx = self.stage_list.currentRow()
+        if idx < 0 or idx >= self.stage_list.count() - 1:
+            return
+        self._write_items(idx)
+
+        self.data["stages"][idx], self.data["stages"][idx + 1] = (
+            self.data["stages"][idx + 1], self.data["stages"][idx]
+        )
+
+        self._reload_stage_list()
+        self.stage_list.setCurrentRow(idx + 1)
+    
+    def _reload_stage_list(self):
+        self.stage_list.clear()
+        for st in self.data["stages"]:
+            item = QListWidgetItem(st["name"])
+            item.setFlags(item.flags() | Qt.ItemIsEditable)
+            self.stage_list.addItem(item)
+
+

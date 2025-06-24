@@ -845,6 +845,8 @@ class ChecklistWidget(QGroupBox):
 
         for i in range(self.tree.topLevelItemCount()):
             collect(self.tree.topLevelItem(i))
+        
+        
 
 # ──────────────────────────────────────────────────────────────────────────────
 # ATC widget (middle column)
@@ -992,6 +994,10 @@ class MainWindow(QWidget):
         top_row.addWidget(self.delete_btn)
         top_row.addWidget(self.pin_cb)
         top_row.addWidget(self.clear_btn)
+
+        self.switch_btn = QPushButton("切换到移动版")
+        self.switch_btn.clicked.connect(self._switch_to_mobile)
+        top_row.addWidget(self.switch_btn)
 
 
         self.save_btn.clicked.connect(self._save_route)
@@ -1172,7 +1178,58 @@ class MainWindow(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "错误", f"清除失败：{e}")
 
+    def _switch_to_mobile(self):
+        """跳转到移动版，并把当前 UI 运行时状态一并带过去。"""
+        from main_mobile import MobileMain
+        self.hide()
 
+        # —— 1. 打包当前窗口的运行时状态 —— #
+        ui_state = {
+            "ac"      : self.check_w.ac_cmb.currentText(),
+            "stage"   : self.check_w.stage_cmb.currentText(),
+            "checked" : self.check_w._checked_memory,
+            "chart"   : self.chart_w.cmb.currentText(),
+        
+            #  新增：
+            "page"      : 0,                           # 桌面只带 Checklist → Mobile 默认在页 0
+            "atc_idx"   : self.atc_w.cmb.currentIndex(),
+            "stay_on_top": self.pin_cb.isChecked(),
+            "route_sel" : self.route_cmb.currentText(),
+        }
+
+        # —— 2. 启动移动版，并注入状态 —— #
+        self._mobile_win = MobileMain(ui_state)   # ← 把状态 dict 作为参数
+        self._mobile_win.show()
+
+        # —— 3. 旧窗口延时关闭，避免 race condition —— #
+        QTimer.singleShot(0, self.close)
+        # 等新窗口正常显示后再延时关闭旧窗口更稳妥
+        QTimer.singleShot(0, self.close)
+
+    def _apply_ui_state(self, s: dict):
+        if not s:
+            return
+        import copy
+    
+        self.check_w._checked_memory = copy.deepcopy(s.get("checked", {}))
+        self.check_w.ac_cmb.setCurrentText(s.get("ac", ""))
+        self.check_w.stage_cmb.setCurrentText(s.get("stage", ""))
+        self.check_w._stage_changed(self.check_w.stage_cmb.currentIndex())
+    
+        if s.get("chart"):
+            self.chart_w.cmb.setCurrentText(s["chart"])
+    
+        #  新增 —— ATC 模板索引
+        idx = s.get("atc_idx", -1)
+        if idx >= 0:
+            self.atc_w.cmb.setCurrentIndex(idx)
+    
+        #  新增 —— 路由选项
+        if s.get("route_sel"):
+            self.route_cmb.setCurrentText(s["route_sel"])
+    
+        #  新增 —— 顶置
+        self.pin_cb.setChecked(bool(s.get("stay_on_top", False)))
 # ──────────────────────────────────────────────────────────────────────────────
 # CLI entry‑point
 # ──────────────────────────────────────────────────────────────────────────────
