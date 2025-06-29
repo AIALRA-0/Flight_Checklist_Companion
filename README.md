@@ -138,7 +138,9 @@
   - `B777.zip`：波音 777 启动检查单
       
     <img src="https://github.com/user-attachments/assets/e4998c76-9393-4856-afec-2a4ea129e1c9" alt="B777 示例" width="600"/>
-
+  - `B737.zip`：波音 737 启动检查单
+      
+    <img src="https://github.com/user-attachments/assets/3d77cb23-2590-4425-a064-5f229da0f831" alt="B737 示例" width="600"/>
 
 #### 使用方式：
 
