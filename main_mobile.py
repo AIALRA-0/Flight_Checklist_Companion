@@ -88,6 +88,13 @@ class MobileMain(QMainWindow):
         bar4 = QToolBar(); bar4.addAction(self.atc_back_btn)
         p4_lay.addWidget(bar4); p4_lay.addWidget(self.editor_atc)
 
+
+        # === 让编辑器关闭(accept/reject)后自动跳回首页 ================
+        self.editor_ck.accepted.connect(lambda: self._refresh_after_ck_save())
+        self.editor_ck.rejected.connect(self._go_home)
+        self.editor_atc.accepted.connect(lambda: self._refresh_after_atc_save())
+        self.editor_atc.rejected.connect(self._go_home)
+
         # 把所有页面加入堆栈
         for page in (p0, p1, p2, p3, p4):
             self.pages.addWidget(page)
@@ -163,7 +170,22 @@ class MobileMain(QMainWindow):
         # —— 若桌面端传来状态，立即恢复 —— #
         if ui_state:
             self._apply_ui_state(ui_state)
-    
+
+
+    def _refresh_after_ck_save(self):
+        """ChecklistEditor 点“保存”后：刷新并回主页，不再弹窗"""
+        self.check_w._checked_memory.clear()
+        self.check_w._ac_changed(self.check_w.ac_cmb.currentText())
+        self.check_w._stage_changed(self.check_w.stage_cmb.currentIndex())
+        self.pages.setCurrentIndex(0)           # 回主页
+
+    def _refresh_after_atc_save(self):
+        """ATCEditor 点“保存”后：刷新并回主页，不再弹窗"""
+        ac    = self.check_w.ac_cmb.currentText()
+        stage = self.check_w.stage_cmb.currentText()
+        self.atc_w.load(ac, stage)              # 重新加载模板
+        self.pages.setCurrentIndex(0)
+
     def _toggle_stay_on_top(self, state):
         stay_on_top = bool(state)
         self.setWindowFlag(Qt.WindowStaysOnTopHint, stay_on_top)
@@ -243,23 +265,23 @@ class MobileMain(QMainWindow):
     def _refresh_routes(self):
         save_dir = Path("save"); save_dir.mkdir(exist_ok=True)
         self.route_cmb.clear()
+        self.route_cmb.addItem("新建航线配置")  #  添加此项
         self.route_cmb.addItems(sorted(p.stem for p in save_dir.glob("*.zip")))
 
     def _save_route(self):
         cur_name = self.route_cmb.currentText().strip()
-        if cur_name:
-            name = cur_name
-            if not yes_no(self, "覆盖确认", "保存将覆盖旧版本配置，确定？"):
-                return
-        else:
+        if cur_name == "新建航线配置" or not cur_name:
             name, ok = QInputDialog.getText(self, "保存航线配置", "输入配置名称：")
             if not ok or not name.strip():
                 return
-            name = name.strip()
+            cur_name = name.strip()
+        else:
+            if not yes_no(self, "覆盖确认", "保存将覆盖旧版本配置，确定？"):
+                return
 
-        zip_path = ensure_dir(Path("save")) / f"{name}.zip"
-        if zip_path.exists() and name != cur_name:
-            if not yes_no(self, "覆盖确认", f"{name} 已存在，是否覆盖？"):
+        zip_path = ensure_dir(Path("save")) / f"{cur_name}.zip"
+        if zip_path.exists() and cur_name != self.route_cmb.currentText().strip():
+            if not yes_no(self, "覆盖确认", f"{cur_name} 已存在，是否覆盖？"):
                 return
 
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -267,9 +289,9 @@ class MobileMain(QMainWindow):
                 for f in folder.rglob("*"):
                     if f.is_file():
                         zf.write(f, f.relative_to(DATA_DIR))
-        QMessageBox.information(self, "完成", f"配置 {name} 已保存。")
+        QMessageBox.information(self, "完成", f"配置 {cur_name} 已保存。")
         self._refresh_routes()
-        self.route_cmb.setCurrentText(name)
+        self.route_cmb.setCurrentText(cur_name)
 
     def _load_route(self):
         sel = self.route_cmb.currentText()
@@ -353,10 +375,12 @@ class MobileMain(QMainWindow):
             if reply == QMessageBox.Yes:
                 self.editor_ck._write_items(self.editor_ck._cur_idx)
                 self.check_mgr.write(self.editor_ck.ac, self.editor_ck.data)
+            self.editor_ck.is_new = False  # ← 添加这一句，避免再次 reject() 时误删
 
         # ATCEditor 页面
         elif idx == 4:
-            self.editor_atc._save()
+            # 不自动保存；返回不应触发 _save（由保存按钮决定）
+            pass
 
         # 切回主页
         self.pages.setCurrentIndex(0)
@@ -388,6 +412,7 @@ class MobileMain(QMainWindow):
         if self.editor_ck.stage_list.count():
             self.editor_ck.stage_list.setCurrentRow(0)
 
+        self.editor_ck.show()
         self.check_w._refresh_ac(first=True)
         self.pages.setCurrentIndex(3)
 
@@ -406,6 +431,7 @@ class MobileMain(QMainWindow):
         if self.editor_ck.stage_list.count():
             self.editor_ck.stage_list.setCurrentRow(0)
 
+        self.editor_ck.show() 
         self.pages.setCurrentIndex(3)
 
     # ------------------------------------------------------------------ #
@@ -419,9 +445,12 @@ class MobileMain(QMainWindow):
             return
         self.editor_atc.ac    = ac
         self.editor_atc.stage = stage
+        self.editor_atc.is_edit = False
+        self.editor_atc.name_edit.setDisabled(False)
         self.editor_atc.name_edit.clear()
         self.editor_atc.cn_edit.clear()
         self.editor_atc.en_edit.clear()
+        self.editor_atc.show()     
         self.pages.setCurrentIndex(4)
 
     def _edit_atc_mobile(self):
@@ -429,11 +458,15 @@ class MobileMain(QMainWindow):
             QMessageBox.warning(self, "无模板", "当前没有可编辑的模板")
             return
         tpl = self.atc_w.tpls[self.atc_w.cmb.currentIndex()]
-        self.editor_atc.ac    = tpl.get("ac", self.check_w.ac_cmb.currentText())
+        self.editor_atc.ac = tpl.get("ac", self.check_w.ac_cmb.currentText())
         self.editor_atc.stage = tpl.get("stage", self.check_w.stage_cmb.currentText())
+        self.editor_atc.tpl = tpl
+        self.editor_atc.is_edit = True   # ← 添加此行
         self.editor_atc.name_edit.setText(tpl.get("name", ""))
+        self.editor_atc.name_edit.setDisabled(True)  # ← 禁止编辑名称
         self.editor_atc.cn_edit.setPlainText(tpl.get("cn", ""))
         self.editor_atc.en_edit.setPlainText(tpl.get("en", ""))
+        self.editor_atc.show()  
         self.pages.setCurrentIndex(4)
 
 

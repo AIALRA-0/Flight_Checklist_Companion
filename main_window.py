@@ -40,6 +40,7 @@ import shutil
 from itertools import chain
 from pathlib import Path
 from typing import Any, Dict, List
+import zipfile
 
 from PySide6.QtCore import Qt, QRectF, QMimeData, QTimer, QSignalBlocker
 from PySide6.QtGui import QPixmap, QWheelEvent, QDragEnterEvent, QDropEvent, QPainter, QMouseEvent, QBrush
@@ -1070,35 +1071,34 @@ class MainWindow(QWidget):
         save_dir.mkdir(exist_ok=True)
         saves = sorted(save_dir.glob("*.zip"))
         self.route_cmb.clear()
+        self.route_cmb.addItem("新建航线配置")  #  添加此项
         self.route_cmb.addItems([s.stem for s in saves])
 
     def _save_route(self):
         cur_name = self.route_cmb.currentText().strip()
-        if cur_name:  # 已有选择，直接覆盖保存
-            name = cur_name
-            if not yes_no(self, "覆盖确认", f"保存将会覆盖旧版本的航线配置，确认保存？"):
-             return
-        else:
+        if cur_name == "新建航线配置" or not cur_name:
             name, ok = QInputDialog.getText(self, "保存航线配置", "输入配置名称：")
             if not ok or not name.strip():
                 return
-            name = name.strip()
-
-        save_dir = ensure_dir(Path("save"))
-        zip_path = save_dir / f"{name}.zip"
-        if zip_path.exists() and name != cur_name:
-            if not yes_no(self, "覆盖确认", f"{name} 已存在，是否覆盖？"):
+            cur_name = name.strip()
+        else:
+            if not yes_no(self, "覆盖确认", f"保存将会覆盖旧版本的航线配置，确认保存？"):
                 return
 
-        import zipfile
+        save_dir = ensure_dir(Path("save"))
+        zip_path = save_dir / f"{cur_name}.zip"
+        if zip_path.exists() and cur_name != self.route_cmb.currentText().strip():
+            if not yes_no(self, "覆盖确认", f"{cur_name} 已存在，是否覆盖？"):
+                return
+
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
             for folder in [CHECKLIST_DIR, ATC_DIR, CHART_DIR, NOTES_DIR]:
                 for f in folder.rglob("*"):
                     if f.is_file():
                         zf.write(f, f.relative_to(DATA_DIR))
-        QMessageBox.information(self, "完成", f"航线配置 {name} 已保存。")
+        QMessageBox.information(self, "完成", f"航线配置 {cur_name} 已保存。")
         self._refresh_routes()
-        self.route_cmb.setCurrentText(name)
+        self.route_cmb.setCurrentText(cur_name)
 
     def _load_route(self):
         sel = self.route_cmb.currentText()

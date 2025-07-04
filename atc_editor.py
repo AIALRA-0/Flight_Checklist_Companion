@@ -107,4 +107,8 @@ class ATCEditor(QDialog):
             })
 
         self.mgr.write(self.ac, data)
+
+        if hasattr(self.parent(), "_go_home"):
+            self.parent()._go_home()
+            
         self.accept()

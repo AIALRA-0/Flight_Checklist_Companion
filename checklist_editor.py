@@ -392,6 +392,8 @@ class ChecklistEditor(QDialog):
 
     # 把项目列表写回 data
     def _write_items(self, idx: int):
+        if not self.data["stages"] or idx >= len(self.data["stages"]):
+            return  # 安全退出，防止越界
         items = []
         for i in range(self.item_list.count()):
             roww = self.item_list.itemWidget(self.item_list.item(i))
@@ -419,6 +421,9 @@ class ChecklistEditor(QDialog):
                 return
 
         self.mgr.write(self.ac, self.data)
+        if hasattr(self.parent(), "_go_home"):
+            self.parent()._go_home()
+            
         self.accept()
     
     def _move_stage_up(self):
