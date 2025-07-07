@@ -171,6 +171,17 @@ class MobileMain(QMainWindow):
         if ui_state:
             self._apply_ui_state(ui_state)
 
+    def _load_stage_note(self, ac: str, stage: str):
+        path = NOTES_DIR / f"{ac}_{stage}.txt"
+        self.stage_notes.p = path                 # 告诉 NotesWidget 现在写哪儿
+        self.stage_notes._loading = True          # 暂停 autosave 信号
+        if path.exists():
+            self.stage_notes.txt.setPlainText(
+                path.read_text(FILE_ENCODING)
+            )
+        else:
+            self.stage_notes.txt.clear()
+        self.stage_notes._loading = False
 
     def _refresh_after_ck_save(self):
         """ChecklistEditor 点“保存”后：刷新并回主页，不再弹窗"""
@@ -254,10 +265,12 @@ class MobileMain(QMainWindow):
     def _ac_changed(self, ac: str):
         stage = self.check_w.stage_cmb.currentText()
         self.atc_w.load(ac, stage)
+        self._load_stage_note(ac, stage) 
 
     def _stage_changed(self, stage: str):
         ac = self.check_w.ac_cmb.currentText()
         self.atc_w.load(ac, stage)
+        self._load_stage_note(ac, stage) 
 
     # ------------------------------------------------------------------ #
     # 顶部工具栏：航线保存 / 加载 / …
